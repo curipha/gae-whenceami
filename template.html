@@ -15,9 +15,6 @@ pre {
   overflow: auto;
   margin-top: 7em;
 }
-hr {
-  visibility: hidden;
-}
 
 #ip {
   font: 300%/1 monospace;
@@ -32,9 +29,6 @@ hr {
 <h1>You are accessed from</h1>
 <p><code id="ip">{{ .IP }}</code></p>
 
-<hr />
-
-<h2>CLI</h2>
 <pre>$ curl {{ .Host }}/ip
 {{ .IP }}
 
