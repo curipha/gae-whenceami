@@ -13,7 +13,6 @@ const textplain = "text/plain"
 type Parameter struct {
   Host      string
   IP        string
-  Proto     string
   UserAgent string
   UnixTime  int64
   Now       string
@@ -26,10 +25,6 @@ func init() {
   http.HandleFunc("/ip", func(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", textplain)
     fmt.Fprintln(w, ip(r))
-  })
-  http.HandleFunc("/proto", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, proto(r))
   })
   http.HandleFunc("/ua", func(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", textplain)
@@ -47,9 +42,6 @@ func init() {
 
 func ip(r *http.Request) string {
   return r.RemoteAddr
-}
-func proto(r *http.Request) string {
-  return r.Proto
 }
 func ua(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("User-Agent"))
@@ -82,7 +74,6 @@ func top(w http.ResponseWriter, r *http.Request) {
     Host:      r.Host,
     JST:       timef(t, time.FixedZone("JST", 9*60*60)),
     IP:        ip(r),
-    Proto:     proto(r),
     UserAgent: ua(r),
     UnixTime:  utime(t),
     Now:       now(r, t),
