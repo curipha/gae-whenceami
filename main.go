@@ -14,6 +14,9 @@ type Parameter struct {
   Host      string
   IP        string
   UserAgent string
+  Country   string
+  Region    string
+  City      string
   UnixTime  int64
   Now       string
   JST       string
@@ -30,6 +33,18 @@ func init() {
     w.Header().Set("Content-Type", textplain)
     fmt.Fprintln(w, ua(r))
   })
+  http.HandleFunc("/country", func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", textplain)
+    fmt.Fprintln(w, country(r))
+  })
+  http.HandleFunc("/region", func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", textplain)
+    fmt.Fprintln(w, region(r))
+  })
+  http.HandleFunc("/city", func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", textplain)
+    fmt.Fprintln(w, city(r))
+  })
   http.HandleFunc("/time", func(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", textplain)
     fmt.Fprintln(w, utime(time.Now()))
@@ -45,6 +60,16 @@ func ip(r *http.Request) string {
 }
 func ua(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("User-Agent"))
+}
+
+func country(r *http.Request) string {
+  return strings.TrimSpace(r.Header.Get("X-AppEngine-Country"))
+}
+func region(r *http.Request) string {
+  return strings.TrimSpace(r.Header.Get("X-AppEngine-Region"))
+}
+func city(r *http.Request) string {
+  return strings.TrimSpace(r.Header.Get("X-AppEngine-City"))
 }
 
 func utime(t time.Time) int64 {
@@ -75,6 +100,9 @@ func top(w http.ResponseWriter, r *http.Request) {
     JST:       timef(t, time.FixedZone("JST", 9*60*60)),
     IP:        ip(r),
     UserAgent: ua(r),
+    Country:   country(r),
+    Region:    region(r),
+    City:      city(r),
     UnixTime:  utime(t),
     Now:       now(r, t),
   })

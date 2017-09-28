@@ -35,6 +35,15 @@ pre {
 $ curl {{ .Host }}/ua
 {{ .UserAgent }}
 
+$ curl {{ .Host }}/country
+{{ .Country }}
+
+$ curl {{ .Host }}/region
+{{ .Region }}
+
+$ curl {{ .Host }}/city
+{{ .City }}
+
 $ curl {{ .Host }}/time
 {{ .UnixTime }}
 
