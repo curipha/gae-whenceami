@@ -29,28 +29,28 @@ pre {
 <h1>You are accessed from</h1>
 <p><code id="ip">{{ .IP }}</code></p>
 
-<pre>$ curl {{ .Host }}/ip
+<pre>$ curl -L {{ .Host }}/ip
 {{ .IP }}
 
-$ curl {{ .Host }}/ua
+$ curl -L {{ .Host }}/ua
 {{ .UserAgent }}
 
-$ curl {{ .Host }}/country
+$ curl -L {{ .Host }}/country
 {{ .Country }}
 
-$ curl {{ .Host }}/region
+$ curl -L {{ .Host }}/region
 {{ .Region }}
 
-$ curl {{ .Host }}/city
+$ curl -L {{ .Host }}/city
 {{ .City }}
 
-$ curl {{ .Host }}/time
+$ curl -L {{ .Host }}/time
 {{ .UnixTime }}
 
-$ curl {{ .Host }}/now
+$ curl -L {{ .Host }}/now
 {{ .Now }}
 
-$ curl {{ .Host }}/now?zone=Asia/Tokyo
+$ curl -L {{ .Host }}/now?zone=Asia/Tokyo
 {{ .JST }}
 </pre>
 
