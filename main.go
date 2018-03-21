@@ -94,16 +94,23 @@ func top(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  t := time.Now()
-  template.Must(template.ParseFiles("template.html")).Execute(w, &Parameter {
-    Host:      r.Host,
-    JST:       timef(t, time.FixedZone("JST", 9*60*60)),
-    IP:        ip(r),
-    UserAgent: ua(r),
-    Country:   country(r),
-    Region:    region(r),
-    City:      city(r),
-    UnixTime:  utime(t),
-    Now:       now(r, t),
-  })
+  agent := strings.ToLower(strings.SplitN(ua(r), "/", 2)[0])
+
+  if agent == "curl" || agent == "wget" {
+    w.Header().Set("Content-Type", textplain)
+    fmt.Fprintln(w, ip(r))
+  } else {
+    t := time.Now()
+    template.Must(template.ParseFiles("template.html")).Execute(w, &Parameter {
+      Host:      r.Host,
+      JST:       timef(t, time.FixedZone("JST", 9*60*60)),
+      IP:        ip(r),
+      UserAgent: ua(r),
+      Country:   country(r),
+      Region:    region(r),
+      City:      city(r),
+      UnixTime:  utime(t),
+      Now:       now(r, t),
+    })
+  }
 }
