@@ -3,7 +3,9 @@ package main
 import (
   "fmt"
   "html/template"
+  "log"
   "net/http"
+  "os"
   "strings"
   "time"
 )
@@ -22,7 +24,7 @@ type Parameter struct {
   JST       string
 }
 
-func init() {
+func main() {
   http.HandleFunc("/", top)
 
   http.HandleFunc("/ip", func(w http.ResponseWriter, r *http.Request) {
@@ -53,10 +55,22 @@ func init() {
     w.Header().Set("Content-Type", textplain)
     fmt.Fprintln(w, now(r, time.Now()))
   })
+
+  port := os.Getenv("PORT")
+  if port == "" {
+    port = "8080"
+    log.Printf("Defaulting to port %s", port)
+  }
+
+  log.Printf("Listening on port %s", port)
+  err := http.ListenAndServe(":" + port, nil)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 
 func ip(r *http.Request) string {
-  return r.RemoteAddr
+  return strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0])
 }
 func ua(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("User-Agent"))
