@@ -104,7 +104,7 @@ func now(r *http.Request, t time.Time) string {
 
 func top(w http.ResponseWriter, r *http.Request) {
   if r.URL.Path != "/" {
-    http.Error(w, "Not Found", http.StatusNotFound)
+    http.NotFound(w, r)
     return
   }
 
