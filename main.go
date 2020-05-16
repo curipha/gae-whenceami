@@ -70,7 +70,12 @@ func main() {
 }
 
 func ip(r *http.Request) string {
-  return strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0])
+  addr := r.Header.Get("X-Appengine-User-Ip")
+  if addr == "" {
+    addr = strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]
+  }
+
+  return strings.TrimSpace(addr)
 }
 func ua(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("User-Agent"))
