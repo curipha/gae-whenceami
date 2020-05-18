@@ -72,6 +72,7 @@ func main() {
 func ip(r *http.Request) string {
   addr := r.Header.Get("X-Appengine-User-Ip")
   if addr == "" {
+    log.Println("'X-Appengine-User-Ip' header is empty! Get remote address from 'X-Forwarded-For'.")
     addr = strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]
   }
 
