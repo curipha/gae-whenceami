@@ -11,7 +11,7 @@ Deploy
 ```bash
 git clone https://github.com/curipha/gae-whenceami.git
 cd gae-whenceami
-gcloud --quiet app deploy
+gcloud --quiet app deploy --no-cache
 ```
 
 Respect
