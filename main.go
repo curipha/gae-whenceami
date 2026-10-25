@@ -12,6 +12,8 @@ import (
 
 const textplain = "text/plain"
 
+var tmpl = template.Must(template.ParseFiles("template.html"))
+
 type Parameter struct {
   Host      string
   IP        string
@@ -121,7 +123,7 @@ func top(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintln(w, ip(r))
   } else {
     t := time.Now()
-    template.Must(template.ParseFiles("template.html")).Execute(w, &Parameter {
+    err := tmpl.Execute(w, &Parameter {
       Host:      r.Host,
       JST:       timef(t, time.FixedZone("JST", 9*60*60)),
       IP:        ip(r),
@@ -132,5 +134,8 @@ func top(w http.ResponseWriter, r *http.Request) {
       UnixTime:  utime(t),
       Now:       now(r, t),
     })
+    if err != nil {
+      log.Println(err)
+    }
   }
 }
