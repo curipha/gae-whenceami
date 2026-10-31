@@ -8,6 +8,8 @@ import (
   "os"
   "strings"
   "time"
+
+  _ "time/tzdata"
 )
 
 const textplain = "text/plain"
