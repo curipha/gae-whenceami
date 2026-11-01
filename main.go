@@ -12,8 +12,6 @@ import (
   _ "time/tzdata"
 )
 
-const textplain = "text/plain"
-
 var tmpl = template.Must(template.ParseFiles("template.html"))
 
 type Parameter struct {
@@ -28,37 +26,20 @@ type Parameter struct {
   JST       string
 }
 
-func main() {
-  http.HandleFunc("/", top)
 
-  http.HandleFunc("/ip", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, ip(r))
-  })
-  http.HandleFunc("/ua", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, ua(r))
-  })
-  http.HandleFunc("/country", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, country(r))
-  })
-  http.HandleFunc("/region", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, region(r))
-  })
-  http.HandleFunc("/city", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, city(r))
-  })
-  http.HandleFunc("/time", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, utime(time.Now()))
-  })
-  http.HandleFunc("/now", func(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", textplain)
-    fmt.Fprintln(w, now(r, time.Now()))
-  })
+func main() {
+  mux := http.NewServeMux()
+
+  // "GET" also accepts HEAD; other methods return 405 and an Allow header.
+  mux.HandleFunc("GET /{$}", top)
+
+  mux.HandleFunc("GET /ip", plain(func(r *http.Request) any { return ip(r) }))
+  mux.HandleFunc("GET /ua", plain(func(r *http.Request) any { return ua(r) }))
+  mux.HandleFunc("GET /country", plain(func(r *http.Request) any { return country(r) }))
+  mux.HandleFunc("GET /region", plain(func(r *http.Request) any { return region(r) }))
+  mux.HandleFunc("GET /city", plain(func(r *http.Request) any { return city(r) }))
+  mux.HandleFunc("GET /time", plain(func(r *http.Request) any { return utime(time.Now()) }))
+  mux.HandleFunc("GET /now", plain(func(r *http.Request) any { return now(r, time.Now()) }))
 
   port := os.Getenv("PORT")
   if port == "" {
@@ -66,10 +47,26 @@ func main() {
     log.Printf("Defaulting to port %s", port)
   }
 
+  server := &http.Server{
+    Addr:              ":" + port,
+    Handler:           mux,
+    ReadHeaderTimeout: 10 * time.Second, // Mitigate Slowloris
+    ReadTimeout:       10 * time.Second,
+    WriteTimeout:      10 * time.Second,
+    IdleTimeout:       60 * time.Second,
+  }
+
   log.Printf("Listening on port %s", port)
-  err := http.ListenAndServe(":" + port, nil)
+  err := server.ListenAndServe()
   if err != nil {
     log.Fatal(err)
+  }
+}
+
+func plain(f func(*http.Request) any) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/plain")
+    fmt.Fprintln(w, f(r))
   }
 }
 
@@ -79,13 +76,11 @@ func ip(r *http.Request) string {
     log.Println("'X-Appengine-User-Ip' header is empty! Get remote address from 'X-Forwarded-For'.")
     addr = strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]
   }
-
   return strings.TrimSpace(addr)
 }
 func ua(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("User-Agent"))
 }
-
 func country(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("X-AppEngine-Country"))
 }
@@ -95,11 +90,9 @@ func region(r *http.Request) string {
 func city(r *http.Request) string {
   return strings.TrimSpace(r.Header.Get("X-AppEngine-City"))
 }
-
 func utime(t time.Time) int64 {
   return t.Unix()
 }
-
 func timef(t time.Time, zone *time.Location) string {
   return t.In(zone).Format(time.RFC1123)
 }
@@ -108,20 +101,13 @@ func now(r *http.Request, t time.Time) string {
   if err != nil {
     zone = time.UTC
   }
-
   return timef(t, zone)
 }
 
 func top(w http.ResponseWriter, r *http.Request) {
-  if r.URL.Path != "/" {
-    http.NotFound(w, r)
-    return
-  }
-
   agent := strings.ToLower(strings.SplitN(ua(r), "/", 2)[0])
-
   if agent == "curl" || agent == "wget" {
-    w.Header().Set("Content-Type", textplain)
+    w.Header().Set("Content-Type", "text/plain")
     fmt.Fprintln(w, ip(r))
   } else {
     t := time.Now()
