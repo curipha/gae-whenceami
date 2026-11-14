@@ -6,6 +6,7 @@ import (
   "log"
   "net/http"
   "os"
+  "strconv"
   "strings"
   "time"
 
@@ -24,6 +25,12 @@ type Parameter struct {
   UnixTime  int64
   Now       string
   JST       string
+  Latitude  string
+  Longitude string
+  MapNorth  float64
+  MapSouth  float64
+  MapEast   float64
+  MapWest   float64
 }
 
 
@@ -111,6 +118,29 @@ func top(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintln(w, ip(r))
   } else {
     t := time.Now()
+
+    var north, south, east, west float64
+    latitude, longitude, found := strings.Cut(strings.TrimSpace(r.Header.Get("X-Appengine-CityLatLong")), ",")
+    if found {
+      maplat, errlat := strconv.ParseFloat(latitude, 64)
+      maplon, errlon := strconv.ParseFloat(longitude, 64)
+      if errlat == nil && errlon == nil {
+        north = maplat + 0.05
+        south = maplat - 0.05
+        east = maplon + 0.05
+        west = maplon - 0.05
+      } else {
+        // Reset lat/long if it failed to convert to float64
+        latitude = "0.000000"
+        longitude = "0.000000"
+      }
+    } else {
+      // GAE sets lat/long to "0.000000" when the city cannot be determined
+      // https://docs.cloud.google.com/appengine/docs/standard/reference/request-headers?tab=go#app_engine-specific_headers
+      latitude = "0.000000"
+      longitude = "0.000000"
+    }
+
     err := tmpl.Execute(w, &Parameter {
       Host:      r.Host,
       JST:       timef(t, time.FixedZone("JST", 9*60*60)),
@@ -121,6 +151,12 @@ func top(w http.ResponseWriter, r *http.Request) {
       City:      city(r),
       UnixTime:  utime(t),
       Now:       now(r, t),
+      Latitude:  latitude,
+      Longitude: longitude,
+      MapNorth:  north,
+      MapSouth:  south,
+      MapEast:   east,
+      MapWest:   west,
     })
     if err != nil {
       log.Println(err)
