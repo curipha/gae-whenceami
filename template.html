@@ -2,31 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Whence am I ... ?</title>
 <style>
 body {
   margin: 3vh 6vw;
 }
 h1 {
-  margin-bottom: 1.5em;
+  all: unset;
+  display: block;
+  font: bold 200%/1 serif;
+  margin-bottom: 1ex;
 }
 pre {
-  margin-top: 7em;
+  margin-top: 6em;
   white-space: pre-wrap;
 }
 
 #ip {
-  font: 300%/1 monospace;
+  display: inline-block;
+  font: 300%/1.2 monospace;
   background: #eee;
   border: 1px solid #bbb;
   padding: 0.4em;
+  overflow-wrap: anywhere;
 }
 </style>
 </head>
 <body>
 
-<h1>You are accessed from</h1>
-<p><code id="ip">{{ .IP }}</code></p>
+<h1>Your origin is:</h1>
+<code id="ip">{{ .IP }}</code>
 
 <pre>$ curl {{ .Host }}/ip
 {{ .IP }}
@@ -55,4 +61,3 @@ $ curl {{ .Host }}/now?zone=Asia/Tokyo
 
 </body>
 </html>
-
